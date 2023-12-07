@@ -365,6 +365,9 @@ impl BuildXML for Paragraph {
     pub fn update_page_number(&mut self, settings: &Settings) {
         self.page_number = Some(estimate_page_number(self, settings));
     }
+    pub fn page_number(&self) -> Option<u32> {
+        self.page_number
+    }
             .build()
     }
 }
@@ -486,3 +489,18 @@ mod tests {
         assert_eq!(b, "HelloWorld".to_owned());
     }
 }
+    #[test]
+    fn test_page_number() {
+        let mut p = Paragraph::new()
+            .add_run(Run::new().add_text("Hello World"));
+        p.update_page_number(&Settings::default());
+        assert_eq!(p.page_number(), Some(1));
+    }
+
+    #[test]
+    fn test_estimate_page_number() {
+        let p = Paragraph::new()
+            .add_run(Run::new().add_text("Hello World"));
+        let page_number = estimate_page_number(&p, &Settings::default());
+        assert_eq!(page_number, 1);
+    }
