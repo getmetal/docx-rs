@@ -13,6 +13,7 @@ pub struct Paragraph {
     pub children: Vec<ParagraphChild>,
     pub property: ParagraphProperty,
     pub has_numbering: bool,
+    pub page_number: Option<u32>,
 }
 
 impl Default for Paragraph {
@@ -121,7 +122,9 @@ impl Serialize for ParagraphChild {
 
 impl Paragraph {
     pub fn new() -> Paragraph {
-        Default::default()
+        let mut para = Default::default();
+        para.page_number = Some(estimate_page_number(&para, &Settings::default()));
+        para
     }
 
     pub fn id(mut self, id: impl Into<String>) -> Self {
@@ -359,6 +362,9 @@ impl BuildXML for Paragraph {
             .add_child(&self.property)
             .add_children(&self.children)
             .close()
+    pub fn update_page_number(&mut self, settings: &Settings) {
+        self.page_number = Some(estimate_page_number(self, settings));
+    }
             .build()
     }
 }
