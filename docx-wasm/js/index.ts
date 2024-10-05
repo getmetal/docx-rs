@@ -1,5 +1,5 @@
 import { Paragraph } from "./paragraph";
-import { ParagraphProperty } from "./paragraph-property";
+import { LineSpacing, ParagraphProperty } from "./paragraph-property";
 import { Table } from "./table";
 import { TableOfContents } from "./table-of-contents";
 import { RunFonts } from "./run";
@@ -194,6 +194,11 @@ export class Docx {
 
   defaultCharacterSpacing(spacing: number) {
     this.styles.defaultCharacterSpacing(spacing);
+    return this;
+  }
+
+  defaultLineSpacing(spacing: LineSpacing) {
+    this.styles.defaultLineSpacing(spacing);
     return this;
   }
 
@@ -417,7 +422,7 @@ export class Docx {
       this.sectionProperty._header.children.forEach((c) => {
         if (c instanceof Paragraph) {
           header = header.add_paragraph(build(c));
-        } else {
+        } else if (c instanceof Table) {
           header = header.add_table(c.build());
         }
       });
@@ -429,7 +434,7 @@ export class Docx {
       this.sectionProperty._firstHeader.children.forEach((c) => {
         if (c instanceof Paragraph) {
           header = header.add_paragraph(build(c));
-        } else {
+        } else if (c instanceof Table) {
           header = header.add_table(c.build());
         }
       });
@@ -441,7 +446,7 @@ export class Docx {
       this.sectionProperty._evenHeader.children.forEach((c) => {
         if (c instanceof Paragraph) {
           header = header.add_paragraph(build(c));
-        } else {
+        } else if (c instanceof Table) {
           header = header.add_table(c.build());
         }
       });
@@ -453,7 +458,7 @@ export class Docx {
       this.sectionProperty._footer.children.forEach((c) => {
         if (c instanceof Paragraph) {
           footer = footer.add_paragraph(build(c));
-        } else {
+        } else if (c instanceof Table) {
           footer = footer.add_table(c.build());
         }
       });
@@ -465,7 +470,7 @@ export class Docx {
       this.sectionProperty._firstFooter.children.forEach((c) => {
         if (c instanceof Paragraph) {
           footer = footer.add_paragraph(build(c));
-        } else {
+        } else if (c instanceof Table) {
           footer = footer.add_table(c.build());
         }
       });
@@ -477,7 +482,7 @@ export class Docx {
       this.sectionProperty._evenFooter.children.forEach((c) => {
         if (c instanceof Paragraph) {
           footer = footer.add_paragraph(build(c));
-        } else {
+        } else if (c instanceof Table) {
           footer = footer.add_table(c.build());
         }
       });
@@ -512,6 +517,12 @@ export class Docx {
       }
     }
 
+    if (this.sectionProperty._pageTypeNum) {
+      const { start, chapStyle } = this.sectionProperty._pageTypeNum;
+      const p = wasm.createPageNumType(start, chapStyle);
+      docx = docx.page_num_type(p);
+    }
+
     if (this.sectionProperty._docGrid) {
       const { gridType, charSpace, linePitch } = this.sectionProperty._docGrid;
       let type = wasm.DocGridType.Default;
@@ -536,21 +547,34 @@ export class Docx {
     }
 
     if (this.styles?.docDefaults) {
-      if (this.styles.docDefaults.runProperty?.fonts) {
-        const fonts = this.buildRunFonts(
-          this.styles.docDefaults.runProperty.fonts
-        );
-        docx = docx.default_fonts(fonts);
+      if (this.styles.docDefaults.runProperty) {
+        if (this.styles.docDefaults.runProperty.fonts) {
+          const fonts = this.buildRunFonts(
+            this.styles.docDefaults.runProperty.fonts
+          );
+          docx = docx.default_fonts(fonts);
+        }
+
+        if (this.styles.docDefaults.runProperty.size) {
+          docx = docx.default_size(this.styles.docDefaults.runProperty.size);
+        }
+
+        if (this.styles.docDefaults.runProperty.characterSpacing) {
+          docx = docx.default_spacing(
+            this.styles.docDefaults.runProperty.characterSpacing
+          );
+        }
       }
 
-      if (this.styles.docDefaults.runProperty?.size) {
-        docx = docx.default_size(this.styles.docDefaults.runProperty.size);
-      }
-
-      if (this.styles.docDefaults.runProperty?.characterSpacing) {
-        docx = docx.default_spacing(
-          this.styles.docDefaults.runProperty.characterSpacing
-        );
+      if (this.styles.docDefaults.paragraphProperty) {
+        if (this.styles.docDefaults.paragraphProperty.lineSpacing) {
+          const spacing = this.buildLineSpacing(
+            this.styles.docDefaults.paragraphProperty
+          );
+          if (spacing) {
+            docx = docx.default_line_spacing(spacing);
+          }
+        }
       }
     }
 
@@ -644,5 +668,7 @@ export * from "./tab";
 export * from "./json";
 export * from "./webextension";
 export * from "./header";
+export * from "./page-num";
+export * from "./num-pages";
 export * from "./footer";
 export * from "./image";

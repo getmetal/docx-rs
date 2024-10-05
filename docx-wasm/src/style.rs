@@ -104,6 +104,29 @@ impl Style {
         self
     }
 
+    pub fn text_alignment(mut self, alignment_type: docx_rs::TextAlignmentType) -> Self {
+        self.0.paragraph_property = self.0.paragraph_property.text_alignment(alignment_type);
+        self
+    }
+
+    pub fn adjust_right_ind(mut self, v: isize) -> Self {
+        self.0.paragraph_property = self.0.paragraph_property.adjust_right_ind(v);
+        self
+    }
+
+    pub fn add_tab(
+        mut self,
+        val: Option<docx_rs::TabValueType>,
+        leader: Option<docx_rs::TabLeaderType>,
+        pos: Option<usize>,
+    ) -> Self {
+        self.0.paragraph_property =
+            self.0
+                .paragraph_property
+                .add_tab(docx_rs::Tab { val, leader, pos });
+        self
+    }
+
     pub fn indent(
         mut self,
         left: i32,
@@ -133,6 +156,11 @@ impl Style {
 
     pub fn line_spacing(mut self, spacing: LineSpacing) -> Self {
         self.0.paragraph_property = self.0.paragraph_property.line_spacing(spacing.take());
+        self
+    }
+
+    pub fn snap_to_grid(mut self, v: bool) -> Self {
+        self.0.paragraph_property = self.0.paragraph_property.snap_to_grid(v);
         self
     }
 
@@ -220,6 +248,67 @@ impl Style {
 
     pub fn layout(mut self, t: docx_rs::TableLayoutType) -> Self {
         self.0.table_property = self.0.table_property.layout(t);
+        self
+    }
+
+    // frame property
+    pub fn wrap(mut self, wrap: &str) -> Self {
+        self.0 = self.0.wrap(wrap);
+        self
+    }
+
+    pub fn v_anchor(mut self, anchor: &str) -> Self {
+        self.0 = self.0.v_anchor(anchor);
+        self
+    }
+
+    pub fn h_anchor(mut self, anchor: &str) -> Self {
+        self.0 = self.0.h_anchor(anchor);
+        self
+    }
+
+    pub fn h_rule(mut self, r: &str) -> Self {
+        self.0 = self.0.h_rule(r);
+        self
+    }
+
+    pub fn x_align(mut self, align: &str) -> Self {
+        self.0 = self.0.x_align(align);
+        self
+    }
+
+    pub fn y_align(mut self, align: &str) -> Self {
+        self.0 = self.0.y_align(align);
+        self
+    }
+
+    pub fn h_space(mut self, x: i32) -> Self {
+        self.0 = self.0.h_space(x);
+        self
+    }
+
+    pub fn v_space(mut self, x: i32) -> Self {
+        self.0 = self.0.v_space(x);
+        self
+    }
+
+    pub fn frame_x(mut self, x: i32) -> Self {
+        self.0 = self.0.frame_x(x);
+        self
+    }
+
+    pub fn frame_y(mut self, y: i32) -> Self {
+        self.0 = self.0.frame_y(y);
+        self
+    }
+
+    pub fn frame_width(mut self, n: u32) -> Self {
+        self.0 = self.0.frame_width(n);
+        self
+    }
+
+    pub fn frame_height(mut self, n: u32) -> Self {
+        self.0 = self.0.frame_height(n);
         self
     }
 }

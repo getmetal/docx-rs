@@ -50,6 +50,20 @@ impl ElementReader for ParagraphProperty {
                             }
                             continue;
                         }
+                        XMLElement::TextAlignment => {
+                            if let Ok(v) = TextAlignmentType::from_str(&attributes[0].value) {
+                                p = p.text_alignment(v);
+                            }
+                            continue;
+                        }
+                        XMLElement::AdjustRightInd => {
+                            if let Some(val) = read_val(&attributes) {
+                                if let Ok(v) = isize::from_str(&val) {
+                                    p = p.adjust_right_ind(v);
+                                }
+                            }
+                            continue;
+                        }
                         XMLElement::ParagraphStyle => {
                             p = p.style(&attributes[0].value);
                             continue;
@@ -80,6 +94,10 @@ impl ElementReader for ParagraphProperty {
                             }
                             continue;
                         }
+                        XMLElement::SnapToGrid => {
+                            let v = read_bool(&attributes);
+                            p.snap_to_grid = Some(v);
+                        }
                         XMLElement::KeepNext => {
                             if read_bool(&attributes) {
                                 p.keep_next = Some(true);
@@ -108,6 +126,11 @@ impl ElementReader for ParagraphProperty {
                         XMLElement::SectionProperty => {
                             if let Ok(sp) = SectionProperty::read(r, &attributes) {
                                 p.section_property = Some(sp);
+                            }
+                        }
+                        XMLElement::FrameProperty => {
+                            if let Ok(pr) = FrameProperty::read(r, &attributes) {
+                                p.frame_property = Some(pr);
                             }
                         }
                         XMLElement::Tabs => {

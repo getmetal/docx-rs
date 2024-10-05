@@ -158,6 +158,11 @@ impl Docx {
         self
     }
 
+    pub fn default_line_spacing(mut self, spacing: LineSpacing) -> Self {
+        self.0.styles = self.0.styles.default_line_spacing(spacing.take());
+        self
+    }
+
     pub fn taskpanes(mut self) -> Self {
         self.0 = self.0.taskpanes();
         self
@@ -170,6 +175,11 @@ impl Docx {
 
     pub fn add_custom_item(mut self, id: &str, xml: &str) -> Self {
         self.0 = self.0.add_custom_item(id, xml);
+        self
+    }
+
+    pub fn page_num_type(mut self, p: PageNumType) -> Self {
+        self.0 = self.0.page_num_type(p.take());
         self
     }
 

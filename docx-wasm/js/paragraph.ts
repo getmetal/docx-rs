@@ -14,6 +14,11 @@ import { BookmarkEnd } from "./bookmark-end";
 import { Comment } from "./comment";
 import { CommentEnd } from "./comment-end";
 import { Hyperlink } from "./hyperlink";
+import { TextAlignmentType } from "./json/bindings/TextAlignmentType";
+import { TabValueType } from "./json/bindings/TabValueType";
+import { TabLeaderType } from "./json/bindings/TabLeaderType";
+import { NumPages } from "./num-pages";
+import { PageNum } from "./page-num";
 
 export type ParagraphChild =
   | Run
@@ -23,7 +28,9 @@ export type ParagraphChild =
   | BookmarkStart
   | BookmarkEnd
   | Comment
-  | CommentEnd;
+  | CommentEnd
+  | NumPages
+  | PageNum;
 
 export class Paragraph {
   hasNumberings = false;
@@ -70,8 +77,39 @@ export class Paragraph {
     return this;
   }
 
+  addPageNum() {
+    this.children.push(new PageNum());
+    return this;
+  }
+
+  addNumPages() {
+    this.children.push(new NumPages());
+    return this;
+  }
+
+  tabs(
+    tabs: {
+      val: TabValueType | null;
+      leader: TabLeaderType | null;
+      pos: number | null;
+    }[]
+  ) {
+    this.property.tabs = tabs;
+    return this;
+  }
+
   align(type: AlignmentType) {
     this.property.align = type;
+    return this;
+  }
+
+  textAlignment(type: TextAlignmentType) {
+    this.property.textAlignment = type;
+    return this;
+  }
+
+  adjustRightInd(v: number) {
+    this.property.adjustRightInd = v;
     return this;
   }
 
@@ -108,6 +146,11 @@ export class Paragraph {
 
   characterSpacing(spacing: number) {
     this.property.runProperty.characterSpacing = spacing;
+    return this;
+  }
+
+  snapToGrid(v: boolean) {
+    this.property = { ...this.property, snapToGrid: v };
     return this;
   }
 
@@ -169,6 +212,78 @@ export class Paragraph {
 
   paragraphPropertyChange(propertyChange: ParagraphPropertyChange) {
     this.property.paragraphPropertyChange = propertyChange;
+    return this;
+  }
+
+  // frameProperty
+  frameHeight(h: number) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.h = h;
+    return this;
+  }
+  hRule(r: string) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.hRule = r;
+    return this;
+  }
+
+  hAnchor(a: string) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.hAnchor = a;
+    return this;
+  }
+
+  hSpace(s: number) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.hSpace = s;
+    return this;
+  }
+
+  vAnchor(a: string) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.vAnchor = a;
+    return this;
+  }
+
+  vSpace(s: number) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.vSpace = s;
+    return this;
+  }
+
+  frameWidth(w: number) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.w = w;
+    return this;
+  }
+
+  wrap(w: string) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.wrap = w;
+    return this;
+  }
+
+  frameX(x: number) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.x = x;
+    return this;
+  }
+
+  xAlign(a: string) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.xAlign = a;
+    return this;
+  }
+
+  frameY(y: number) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.y = y;
+    return this;
+  }
+
+  yAlign(y: string) {
+    this.property.frameProperty = { ...this.property.frameProperty };
+    this.property.frameProperty.yAlign = y;
     return this;
   }
 }

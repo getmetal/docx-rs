@@ -190,6 +190,30 @@ describe("reader", () => {
     const json = w.readDocx(buffer);
     expect(json).toMatchSnapshot();
   });
+
+  test("should read default line spacing", () => {
+    const buffer = readFileSync(
+      "../fixtures/default_line_spacing/default_line_spacing.docx"
+    );
+    const json = w.readDocx(buffer);
+    expect(json).toMatchSnapshot();
+  });
+
+  test("should read even header", () => {
+    const buffer = readFileSync(
+      "../fixtures/first_even_header/first_even_header.docx"
+    );
+    const json = w.readDocx(buffer);
+    expect(json).toMatchSnapshot();
+  });
+
+  test("should read page num in header", () => {
+    const buffer = readFileSync(
+      "../fixtures/page_num_in_header/page_num_in_header.docx"
+    );
+    const json = w.readDocx(buffer);
+    expect(json).toMatchSnapshot();
+  });
 });
 
 describe("writer", () => {
@@ -974,5 +998,69 @@ describe("writer", () => {
       }
     }
     writeFileSync("../output/js/style.docx", buffer);
+  });
+
+  test("should write default line spacing", () => {
+    const spacing = new w.LineSpacing()
+      .before(100)
+      .after(0)
+      .line(100)
+      .afterLines(400);
+
+    const p = new w.Paragraph()
+      .addRun(new w.Run().addText("Hello "))
+      .lineSpacing(spacing);
+
+    const buffer = new w.Docx()
+      .defaultLineSpacing(spacing)
+      .addParagraph(p)
+      .build();
+
+    writeFileSync("../output/js/default_line_spacing.docx", buffer);
+    const z = new Zip(Buffer.from(buffer));
+    for (const e of z.getEntries()) {
+      if (e.entryName.match(/document.xml|numbering.xml/)) {
+        expect(z.readAsText(e)).toMatchSnapshot();
+      }
+    }
+  });
+
+  test("should write image in header", () => {
+    const buf = Buffer.from(encodedCat, "base64");
+    const image = new w.Image(buf).size(320 * 9525, 240 * 9525);
+    const p = new w.Paragraph().addRun(
+      new w.Run().addText("Hello world!!").addImage(image)
+    );
+    const header = new w.Header().addParagraph(p);
+    const buffer = new w.Docx().header(header).addParagraph(p).build();
+
+    writeFileSync("../output/js/header_in_image.docx", buffer);
+
+    const z = new Zip(Buffer.from(buffer));
+    for (const e of z.getEntries()) {
+      if (e.entryName.match(/document.xml/)) {
+        expect(z.readAsText(e)).toMatchSnapshot();
+      }
+    }
+  });
+
+  test("should write pageNum in header", () => {
+    const p = new w.Paragraph()
+      .addRun(new w.Run().addText("Hello world!! "))
+      .addPageNum()
+      .addRun(new w.Run().addText(" / "))
+      .addNumPages()
+      .align("center");
+    const header = new w.Header().addParagraph(p);
+    const buffer = new w.Docx().header(header).addParagraph(p).build();
+
+    writeFileSync("../output/js/header_in_page_num.docx", buffer);
+
+    const z = new Zip(Buffer.from(buffer));
+    for (const e of z.getEntries()) {
+      if (e.entryName.match(/document.xml|header/)) {
+        expect(z.readAsText(e)).toMatchSnapshot();
+      }
+    }
   });
 });

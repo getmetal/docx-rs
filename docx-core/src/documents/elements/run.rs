@@ -39,6 +39,8 @@ pub enum RunChild {
     DeleteInstrText(Box<DeleteInstrText>),
     // For reader
     InstrTextString(String),
+    FootnoteReference(FootnoteReference),
+    Shading(Shading),
 }
 
 impl Serialize for RunChild {
@@ -122,6 +124,18 @@ impl Serialize for RunChild {
                 let mut t = serializer.serialize_struct("InstrTextString", 2)?;
                 t.serialize_field("type", "instrTextString")?;
                 t.serialize_field("data", i)?;
+                t.end()
+            }
+            RunChild::FootnoteReference(ref f) => {
+                let mut t = serializer.serialize_struct("FootnoteReference", 2)?;
+                t.serialize_field("type", "footnoteReference")?;
+                t.serialize_field("data", f)?;
+                t.end()
+            }
+            RunChild::Shading(ref f) => {
+                let mut t = serializer.serialize_struct("Shading", 2)?;
+                t.serialize_field("type", "shading")?;
+                t.serialize_field("data", f)?;
                 t.end()
             }
         }
@@ -254,6 +268,11 @@ impl Run {
         self
     }
 
+    pub fn strike(mut self) -> Run {
+        self.run_property = self.run_property.strike();
+        self
+    }
+
     pub fn text_border(mut self, b: TextBorder) -> Run {
         self.run_property = self.run_property.text_border(b);
         self
@@ -283,6 +302,18 @@ impl Run {
         self.run_property = p;
         self
     }
+
+    pub fn add_footnote_reference(mut self, footnote: Footnote) -> Run {
+        self.run_property = RunProperty::new().style("FootnoteReference");
+        self.children
+            .push(RunChild::FootnoteReference(footnote.into()));
+        self
+    }
+
+    pub fn shading(mut self, shading: Shading) -> Run {
+        self.run_property = self.run_property.shading(shading);
+        self
+    }
 }
 
 impl BuildXML for Run {
@@ -306,6 +337,8 @@ impl BuildXML for Run {
                 RunChild::InstrText(c) => b = b.add_child(c),
                 RunChild::DeleteInstrText(c) => b = b.add_child(c),
                 RunChild::InstrTextString(_) => unreachable!(),
+                RunChild::FootnoteReference(c) => b = b.add_child(c),
+                RunChild::Shading(s) => b = b.add_child(s),
             }
         }
         b.close().build()
@@ -335,6 +368,15 @@ mod tests {
         assert_eq!(
             str::from_utf8(&b).unwrap(),
             r#"<w:r><w:rPr><w:u w:val="single" /></w:rPr><w:t xml:space="preserve">Hello</w:t></w:r>"#
+        );
+    }
+
+    #[test]
+    fn test_strike() {
+        let b = Run::new().add_text("Hello").strike().build();
+        assert_eq!(
+            str::from_utf8(&b).unwrap(),
+            r#"<w:r><w:rPr><w:strike /></w:rPr><w:t xml:space="preserve">Hello</w:t></w:r>"#
         );
     }
 
@@ -374,6 +416,24 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&run).unwrap(),
             r#"{"runProperty":{"sz":30,"szCs":30,"color":"C9211E","highlight":"yellow","underline":"single","bold":true,"boldCs":true,"italic":true,"italicCs":true,"vanish":true,"characterSpacing":100},"children":[{"type":"tab"},{"type":"text","data":{"preserveSpace":true,"text":"Hello"}},{"type":"break","data":{"breakType":"page"}},{"type":"deleteText","data":{"text":"deleted","preserveSpace":true}}]}"#,
+        );
+    }
+
+    #[test]
+    fn test_run_footnote_reference() {
+        let c = RunChild::FootnoteReference(FootnoteReference::new(1));
+        assert_eq!(
+            serde_json::to_string(&c).unwrap(),
+            r#"{"type":"footnoteReference","data":{"id":1}}"#
+        );
+    }
+
+    #[test]
+    fn test_run_shading() {
+        let c = RunChild::Shading(Shading::new());
+        assert_eq!(
+            serde_json::to_string(&c).unwrap(),
+            r#"{"type":"shading","data":{"shdType":"clear","color":"auto","fill":"FFFFFF"}}"#
         );
     }
 }

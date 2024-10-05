@@ -3,8 +3,8 @@ use serde::Serialize;
 use super::*;
 use crate::documents::BuildXML;
 use crate::types::{AlignmentType, SpecialIndentType};
-use crate::xml_builder::*;
 use crate::ParagraphBorderPosition;
+use crate::{xml_builder::*, TextAlignmentType};
 
 #[derive(Serialize, Debug, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -33,13 +33,21 @@ pub struct ParagraphProperty {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub section_property: Option<SectionProperty>,
     pub tabs: Vec<Tab>,
-    // read only
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) div_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paragraph_property_change: Option<ParagraphPropertyChange>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub borders: Option<ParagraphBorders>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub frame_property: Option<FrameProperty>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text_alignment: Option<TextAlignment>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub adjust_right_ind: Option<AdjustRightInd>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub snap_to_grid: Option<bool>,
+    // read only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) div_id: Option<String>,
 }
 
 // 17.3.1.26
@@ -93,6 +101,11 @@ impl ParagraphProperty {
         self
     }
 
+    pub fn snap_to_grid(mut self, v: bool) -> Self {
+        self.snap_to_grid = Some(v);
+        self
+    }
+
     pub fn keep_next(mut self, v: bool) -> Self {
         self.keep_next = Some(v);
         self
@@ -138,6 +151,21 @@ impl ParagraphProperty {
         self
     }
 
+    pub fn frame_property(mut self, s: FrameProperty) -> Self {
+        self.frame_property = Some(s);
+        self
+    }
+
+    pub fn text_alignment(mut self, s: TextAlignmentType) -> Self {
+        self.text_alignment = Some(TextAlignment::new(s));
+        self
+    }
+
+    pub fn adjust_right_ind(mut self, s: isize) -> Self {
+        self.adjust_right_ind = Some(AdjustRightInd::new(s));
+        self
+    }
+
     pub(crate) fn hanging_chars(mut self, chars: i32) -> Self {
         if let Some(indent) = self.indent {
             self.indent = Some(indent.hanging_chars(chars));
@@ -179,12 +207,19 @@ fn inner_build(p: &ParagraphProperty) -> Vec<u8> {
         .add_child(&p.run_property)
         .add_optional_child(&p.style)
         .add_optional_child(&p.numbering_property)
+        .add_optional_child(&p.frame_property)
         .add_optional_child(&p.alignment)
         .add_optional_child(&p.indent)
         .add_optional_child(&p.line_spacing)
         .add_optional_child(&p.outline_lvl)
         .add_optional_child(&p.paragraph_property_change)
-        .add_optional_child(&p.borders);
+        .add_optional_child(&p.borders)
+        .add_optional_child(&p.text_alignment)
+        .add_optional_child(&p.adjust_right_ind);
+
+    if let Some(v) = p.snap_to_grid {
+        b = b.snap_to_grid(v)
+    }
 
     if let Some(v) = p.keep_next {
         if v {

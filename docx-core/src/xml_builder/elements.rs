@@ -1,6 +1,8 @@
 use super::XMLBuilder;
 use super::XmlEvent;
 use crate::types::*;
+use crate::FrameProperty;
+use crate::TablePositionProperty;
 
 const EXPECT_MESSAGE: &str = "should write buf";
 
@@ -20,6 +22,18 @@ impl XMLBuilder {
             .write(XmlEvent::start_element("w:t").attr("xml:space", space))
             .expect(EXPECT_MESSAGE);
         self.writer.write(text).expect(EXPECT_MESSAGE);
+        self.close()
+    }
+
+    pub(crate) fn snap_to_grid(mut self, v: bool) -> Self {
+        let v = if v {
+            "true".to_string()
+        } else {
+            "false".to_string()
+        };
+        self.writer
+            .write(XmlEvent::start_element("w:snapToGrid").attr("w:val", &v))
+            .expect(EXPECT_MESSAGE);
         self.close()
     }
 
@@ -127,6 +141,7 @@ impl XMLBuilder {
     open!(open_run_property, "w:rPr");
     open!(open_paragraph_borders, "w:pBdr");
     open!(open_run_property_default, "w:rPrDefault");
+    open!(open_paragraph_property_default, "w:pPrDefault");
     // i.e. <w:qFormat ... >
     closed!(q_format, "w:qFormat");
     // i.e. <w:p ... >
@@ -163,6 +178,8 @@ impl XMLBuilder {
     closed_with_usize!(sz, "w:sz");
     // i.e. <w:szCs ... >
     closed_with_usize!(sz_cs, "w:szCs");
+    closed_with_isize!(adjust_right_ind, "w:adjustRightInd");
+    closed_with_str!(text_alignment, "w:textAlignment");
 
     closed!(field_character, "w:fldChar", "w:fldCharType", "w:dirty");
 
@@ -173,6 +190,8 @@ impl XMLBuilder {
 
     closed!(b, "w:b");
     closed!(b_cs, "w:bCs");
+
+    closed_with_str!(caps, "w:caps");
 
     closed!(i, "w:i");
     closed!(i_cs, "w:iCs");
@@ -315,6 +334,7 @@ impl XMLBuilder {
     open!(open_table_cell_borders, "w:tcBorders");
     open!(open_table_borders, "w:tblBorders");
     open!(open_table_cell_margins, "w:tblCellMar");
+    open!(open_cell_margins, "w:tcMar");
 
     closed!(table_layout, "w:tblLayout", "w:type");
     closed_with_str!(table_style, "w:tblStyle");
@@ -392,6 +412,8 @@ impl XMLBuilder {
         "w:author",
         "w:date"
     );
+    // cantSplit for table row
+    closed!(cant_split, "w:cantSplit");
 
     closed!(bookmark_start, "w:bookmarkStart", "w:id", "w:name");
     closed!(bookmark_end, "w:bookmarkEnd", "w:id");
@@ -446,7 +468,11 @@ impl XMLBuilder {
     closed!(ul_trail_space, "w:ulTrailSpace");
     closed!(do_not_expand_shift_return, "w:doNotExpandShiftReturn");
     closed!(adjust_line_height_table, "w:adjustLineHeightInTable");
-    closed!(character_spacing_control,"w:characterSpacingControl","w:val");
+    closed!(
+        character_spacing_control,
+        "w:characterSpacingControl",
+        "w:val"
+    );
     closed!(use_fe_layout, "w:useFELayout");
     closed!(
         compat_setting,
@@ -562,6 +588,126 @@ impl XMLBuilder {
         self.close()
     }
 
+    /**
+    pub h_space: Option<String>,
+    pub v_space: Option<String>,
+     */
+
+    pub(crate) fn frame_property(mut self, prop: &FrameProperty) -> Self {
+        let mut w = XmlEvent::start_element("w:framePr");
+        let wrap: String = prop.wrap.iter().cloned().collect();
+        if prop.wrap.is_some() {
+            w = w.attr("w:wrap", &wrap);
+        }
+        let h_rule: String = prop.h_rule.iter().cloned().collect();
+        if prop.h_rule.is_some() {
+            w = w.attr("w:hRule", &h_rule);
+        }
+        let h_anchor: String = prop.h_anchor.iter().cloned().collect();
+        if prop.h_anchor.is_some() {
+            w = w.attr("w:hAnchor", &h_anchor);
+        }
+        let v_anchor: String = prop.v_anchor.iter().cloned().collect();
+        if prop.v_anchor.is_some() {
+            w = w.attr("w:vAnchor", &v_anchor);
+        }
+        let x_align: String = prop.x_align.iter().cloned().collect();
+        if prop.x_align.is_some() {
+            w = w.attr("w:xAlign", &x_align);
+        }
+        let y_align: String = prop.y_align.iter().cloned().collect();
+        if prop.y_align.is_some() {
+            w = w.attr("w:yAlign", &y_align);
+        }
+        let x: String = format!("{}", prop.x.unwrap_or_default());
+        if prop.x.is_some() {
+            w = w.attr("w:x", &x);
+        }
+        let y: String = format!("{}", prop.y.unwrap_or_default());
+        if prop.y.is_some() {
+            w = w.attr("w:y", &y);
+        }
+        let h_space: String = format!("{}", prop.h_space.unwrap_or_default());
+        if prop.h_space.is_some() {
+            w = w.attr("w:h_space", &h_space);
+        }
+        let v_space: String = format!("{}", prop.v_space.unwrap_or_default());
+        if prop.v_space.is_some() {
+            w = w.attr("w:v_space", &v_space);
+        }
+        let width: String = format!("{}", prop.w.unwrap_or_default());
+        if prop.w.is_some() {
+            w = w.attr("w:w", &width);
+        }
+        let h: String = format!("{}", prop.h.unwrap_or_default());
+        if prop.h.is_some() {
+            w = w.attr("w:h", &h);
+        }
+        self.writer.write(w).expect(EXPECT_MESSAGE);
+        self.close()
+    }
+
+    pub(crate) fn table_position_property(mut self, prop: &TablePositionProperty) -> Self {
+        let mut w = XmlEvent::start_element("w:tblpPr");
+
+        let v: String = format!("{}", prop.left_from_text.unwrap_or_default());
+        if prop.left_from_text.is_some() {
+            w = w.attr("w:leftFromText", &v);
+        }
+
+        let v: String = format!("{}", prop.right_from_text.unwrap_or_default());
+        if prop.right_from_text.is_some() {
+            w = w.attr("w:rightFromText", &v);
+        }
+
+        let v: String = prop.vertical_anchor.iter().cloned().collect();
+        if prop.vertical_anchor.is_some() {
+            w = w.attr("w:vertAnchor", &v);
+        }
+
+        let v: String = prop.horizontal_anchor.iter().cloned().collect();
+        if prop.horizontal_anchor.is_some() {
+            w = w.attr("w:horzAnchor", &v);
+        }
+
+        let v: String = prop.position_x_alignment.iter().cloned().collect();
+        if prop.position_x_alignment.is_some() {
+            w = w.attr("w:tblpXSpec", &v);
+        }
+
+        let v: String = prop.position_y_alignment.iter().cloned().collect();
+        if prop.position_y_alignment.is_some() {
+            w = w.attr("w:tblpYSpec", &v);
+        }
+
+        let v: String = format!("{}", prop.position_x.unwrap_or_default());
+        if prop.position_x.is_some() {
+            w = w.attr("w:tblpX", &v);
+        }
+
+        let v: String = format!("{}", prop.position_y.unwrap_or_default());
+        if prop.position_y.is_some() {
+            w = w.attr("w:tblpY", &v);
+        }
+
+        self.writer.write(w).expect(EXPECT_MESSAGE);
+        self.close()
+    }
+
+    pub(crate) fn page_num_type(mut self, start: Option<u32>, chap_style: Option<String>) -> Self {
+        let mut w = XmlEvent::start_element("w:pgNumType");
+        let start_string = format!("{}", start.unwrap_or_default());
+        let chap_style_string = chap_style.clone().unwrap_or_default();
+        if start.is_some() {
+            w = w.attr("w:start", &start_string);
+        }
+        if chap_style.is_some() {
+            w = w.attr("w:chapStyle", &chap_style_string);
+        }
+        self.writer.write(w).expect(EXPECT_MESSAGE);
+        self.close()
+    }
+
     pub(crate) fn tab(
         mut self,
         v: Option<TabValueType>,
@@ -598,6 +744,39 @@ impl XMLBuilder {
 
         self.close()
     }
+
+    pub(crate) fn ptab(
+        mut self,
+        alignment: PositionalTabAlignmentType,
+        relative_to: PositionalTabRelativeTo,
+        leader: TabLeaderType,
+    ) -> Self {
+        let alignment_string = alignment.to_string();
+        let relative_to_string = relative_to.to_string();
+        let leader_string = leader.to_string();
+
+        let mut t = XmlEvent::start_element("w:ptab");
+
+        t = t.attr("w:alignment", &alignment_string);
+        t = t.attr("w:relativeTo", &relative_to_string);
+        t = t.attr("w:leader", &leader_string);
+
+        self.writer.write(t).expect(EXPECT_MESSAGE);
+
+        self.close()
+    }
+
+    // FootnoteReference
+    // w:footnoteReference w:id="1"
+    pub(crate) fn footnote_reference(mut self, id: usize) -> Self {
+        self.writer
+            .write(XmlEvent::start_element("w:footnoteReference").attr("w:id", &id.to_string()))
+            .expect(EXPECT_MESSAGE);
+        self.close()
+    }
+
+    // Footnotes
+    open!(open_footnote, "w:footnote", "w:id");
 }
 
 #[cfg(test)]
@@ -655,6 +834,32 @@ mod tests {
         assert_eq!(
             str::from_utf8(&r).unwrap(),
             r#"<w:basedOn w:val="Normal" />"#
+        );
+    }
+
+    #[test]
+    fn test_ptab() {
+        let b = XMLBuilder::new();
+        let r = b
+            .ptab(
+                PositionalTabAlignmentType::Left,
+                PositionalTabRelativeTo::Indent,
+                TabLeaderType::None,
+            )
+            .build();
+        assert_eq!(
+            str::from_utf8(&r).unwrap(),
+            r#"<w:ptab w:alignment="left" w:relativeTo="indent" w:leader="none" />"#
+        );
+    }
+
+    #[test]
+    fn test_footnote_reference() {
+        let b = XMLBuilder::new();
+        let r = b.footnote_reference(1).build();
+        assert_eq!(
+            str::from_utf8(&r).unwrap(),
+            r#"<w:footnoteReference w:id="1" />"#
         );
     }
 }

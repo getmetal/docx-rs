@@ -5,10 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## @0.4.17 (26. Apr, 2024)
+
+- Floating images cause docx generation to fail with error `should end: LastElementNameNotAvailable`
+
+## @0.4.16 (24. Apr, 2024)
+
+- Fixed a `framePr`
+
+## @0.4.14 (12. Apr, 2024)
+
+- Remove `dbg!`
+- Support `caps`
+
+## @0.4.13 (29. Mar, 2024)
+
+- Support `tblppr`
+- Support `tcMar`
+- Support `textAlignment`
+- Support `adjustRightInd`
+- Support `framePr`
+- Support `pageNumType`
+
+## @0.4.11 (1. Mar, 2024)
+
+- Fixed a `title_pg` condition when read.
+- Parse `even_and_odd_headers`.
+
+## @0.4.9 (1. Mar, 2024)
+
+- Fixed a js header/footer types.
+
+## @0.4.8 (19. Feb, 2024)
+
+- Fixed a bug, image in header/footer is not stored in media when read.
+- Fixed a bug, image in header/footer is broken.
+
+## docx-wasm@0.0.278-rc27 (17. Jan, 2024)
+
+- Support part of `pPrDefault`.
+
 ## docx-wasm@0.0.278-rc26 (1. Dec, 2023)
 
 - read sectPr.type as `section_type`.
-
 
 ## docx-wasm@0.0.278-rc23 (21. Aug, 2023)
 
@@ -56,7 +95,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fixed a bug, `adjustLineHeightInTable` is not affected in js interface.
 - fix lineRule ts type
 
-
 ## docx-wasm@0.0.278-rc8 (23. Jun, 2023)
 
 - Support character space control
@@ -102,6 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## docx-wasm@0.0.276-rc38 (7. Dec, 2022)
 
 - fix #584 Remove `%` from width.
+
 ## docx-wasm@0.0.276-rc37 (28. Nov, 2022)
 
 - fixed a bug, `adjustLineHeightInTable` is not affected in js interface.
@@ -279,6 +318,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## docx-wasm@0.0.231 (19. January, 2022)
 
 - Fixed a pPr reader.
+
 ## docx-wasm@0.0.229 (19. January, 2022)
 
 - Fixed a del/ins type in runProperty

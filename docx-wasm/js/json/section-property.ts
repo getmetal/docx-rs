@@ -1,3 +1,9 @@
+import { HeaderJSON, HeaderReferenceJSON } from "./header";
+import { FooterJSON, FooterReferenceJSON } from "./footer";
+import { PageNumType as PageNumTypeJSON } from "./bindings/PageNumType";
+
+export { PageNumType as PageNumTypeJSON } from "./bindings/PageNumType";
+
 export type DocGridType = "default" | "lines" | "linesAndChars" | "snapToChars";
 
 export type SectionType =
@@ -30,4 +36,20 @@ export type SectionPropertyJSON = {
   columns: number;
   docGrid?: DocGridJSON;
   sectionType?: SectionType;
+  titlePg?: boolean;
+  // header
+  headerReference?: HeaderReferenceJSON;
+  header?: HeaderJSON;
+  firstHeaderReference?: HeaderReferenceJSON;
+  firstHeader?: HeaderJSON;
+  evenHeaderReference?: HeaderReferenceJSON;
+  evenHeader?: HeaderJSON;
+  // footer
+  footerReference?: FooterReferenceJSON;
+  footer?: FooterJSON;
+  firstFooterReference?: FooterReferenceJSON;
+  firstFooter?: FooterJSON;
+  evenFooterReference?: FooterReferenceJSON;
+  evenFooter?: FooterJSON;
+  pageNumType?: PageNumTypeJSON;
 };

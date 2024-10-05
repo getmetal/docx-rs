@@ -9,6 +9,8 @@
 [![GitHub Actions Status](https://github.com/bokuweb/docx-rs/workflows/Continuous%20Integration/badge.svg)](https://github.com/bokuweb/docx-rs/actions)
 [![docx-rs at crates.io](https://img.shields.io/crates/v/docx-rs.svg)](https://crates.io/crates/docx-rs)
 [![](https://img.shields.io/npm/v/docx-wasm.svg)](https://www.npmjs.com/package/docx-wasm)
+<a href="https://www.npmjs.com/package/docx-wasm">
+<img src="https://img.shields.io/npm/dm/docx-wasm.svg" /></a>
 
 ## Installation
 
@@ -16,7 +18,7 @@
 
 ```
 [dependencies]
-docx-rs = "0.2"
+docx-rs = "0.4"
 ```
 
 ### Browser/Node.js
@@ -34,7 +36,7 @@ use docx_rs::*;
 
 pub fn hello() -> Result<(), DocxError> {
     let path = std::path::Path::new("./hello.docx");
-    let file = std::fs::File::create(&path).unwrap();
+    let file = std::fs::File::create(path).unwrap();
     Docx::new()
         .add_paragraph(Paragraph::new().add_run(Run::new().add_text("Hello")))
         .build()
@@ -69,7 +71,7 @@ const { buffer } = new w.Docx()
   .addParagraph(new w.Paragraph().addRun(new w.Run().addText("Hello world!!")))
   .build();
 
-writeFileSync("hello.docx", buffer);
+writeFileSync("hello.docx", Buffer.from(buffer));
 ```
 
 ### More examples
@@ -98,14 +100,14 @@ writeFileSync("hello.docx", buffer);
 You can run example with following code.
 Please see `examples` directory.
 
-``` sh
+```sh
 $ cargo run --example [EXAMPLE_NAME]
 ```
 
 For Example if you want to run `hello` example.
 Please run following command.
 
-``` sh
+```sh
 $ cargo run --example hello
 ```
 
@@ -163,6 +165,7 @@ $ yarn test -- --updateSnapshot
   - [x] vanish
   - [x] Italic
   - [x] TextBorder
+  - [x] Footnote
 - [x] Break
 - [x] Header
 - [x] Footer
@@ -174,4 +177,3 @@ $ yarn test -- --updateSnapshot
 - [x] Table of contents
 - [ ] Section
 - [ ] Textbox
-

@@ -45,15 +45,27 @@ where
     zip.write_all(&xml.numberings)?;
     zip.start_file("word/commentsExtended.xml", options)?;
     zip.write_all(&xml.comments_extended)?;
+    zip.start_file("word/footnotes.xml", options)?;
+    zip.write_all(&xml.footnotes)?;
 
     for (i, h) in xml.headers.iter().enumerate() {
         zip.start_file(format!("word/header{}.xml", i + 1), options)?;
         zip.write_all(h)?;
+
+        if let Some(rels) = xml.header_rels.get(i) {
+            zip.start_file(format!("word/_rels/header{}.xml.rels", i + 1), options)?;
+            zip.write_all(rels)?;
+        }
     }
 
     for (i, h) in xml.footers.iter().enumerate() {
         zip.start_file(format!("word/footer{}.xml", i + 1), options)?;
         zip.write_all(h)?;
+
+        if let Some(rels) = xml.footer_rels.get(i) {
+            zip.start_file(format!("word/_rels/footer{}.xml.rels", i + 1), options)?;
+            zip.write_all(rels)?;
+        }
     }
 
     if !xml.media.is_empty() {

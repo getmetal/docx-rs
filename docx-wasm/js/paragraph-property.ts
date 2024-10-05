@@ -1,19 +1,30 @@
 import { RunProperty, createDefaultRunProperty } from "./run";
 
 import * as wasm from "./pkg";
+import { TextAlignmentType } from "./json/bindings/TextAlignmentType";
+import { Tab } from "./json/bindings/Tab";
+import { AlignmentType } from "./json/bindings/AlignmentType";
 
-export type AlignmentType =
-  | "center"
-  | "left"
-  | "right"
-  | "both"
-  | "justified"
-  | "distribute"
-  | "end";
+export { AlignmentType } from "./json/bindings/AlignmentType";
 
 export type SpecialIndentKind = "firstLine" | "hanging";
 
 export type LineSpacingType = "atLeast" | "auto" | "exact";
+
+export type FrameProperty = {
+  h?: number;
+  hRule?: string;
+  hAnchor?: string;
+  hSpace?: number;
+  vAnchor?: string;
+  vSpace?: number;
+  w?: number;
+  wrap?: string;
+  x?: number;
+  xAlign?: string;
+  y?: number;
+  yAlign?: string;
+};
 
 export class LineSpacing {
   _before?: number;
@@ -51,6 +62,7 @@ export class LineSpacing {
 
 export type ParagraphProperty = {
   align?: AlignmentType;
+  textAlignment?: TextAlignmentType;
   styleId?: string;
   indent?: {
     left: number;
@@ -70,6 +82,10 @@ export type ParagraphProperty = {
   widowControl: boolean;
   paragraphPropertyChange?: ParagraphPropertyChange;
   outlineLvl?: number | null;
+  snapToGrid?: boolean;
+  adjustRightInd?: number;
+  tabs?: Tab[];
+  frameProperty?: FrameProperty;
 };
 
 export const createDefaultParagraphProperty = (): ParagraphProperty => {
@@ -113,6 +129,31 @@ export const createParagraphAlignment = (
   }
 };
 
+export const createParagraphTextAlignment = (
+  align?: TextAlignmentType | undefined
+): wasm.TextAlignmentType | null => {
+  switch (align) {
+    case "auto": {
+      return wasm.TextAlignmentType.Auto;
+    }
+    case "baseline": {
+      return wasm.TextAlignmentType.Baseline;
+    }
+    case "bottom": {
+      return wasm.TextAlignmentType.Bottom;
+    }
+    case "center": {
+      return wasm.TextAlignmentType.Center;
+    }
+    case "top": {
+      return wasm.TextAlignmentType.Top;
+    }
+    default: {
+      return null;
+    }
+  }
+};
+
 export class ParagraphPropertyChange {
   _author: string = "";
   _date: string = "";
@@ -130,6 +171,16 @@ export class ParagraphPropertyChange {
 
   align(type: AlignmentType) {
     this._property.align = type;
+    return this;
+  }
+
+  textAlignment(type: TextAlignmentType) {
+    this._property.textAlignment = type;
+    return this;
+  }
+
+  adjustRightInd(v: number) {
+    this._property.adjustRightInd = v;
     return this;
   }
 
@@ -209,6 +260,15 @@ export const setParagraphProperty = <T extends wasm.Paragraph | wasm.Style>(
     target = target.align(alignment) as T;
   }
 
+  const textAlignment = createParagraphTextAlignment(property.textAlignment);
+  if (textAlignment != null) {
+    target = target.text_alignment(textAlignment) as T;
+  }
+
+  if (property.adjustRightInd != null) {
+    target = target.adjust_right_ind(property.adjustRightInd) as T;
+  }
+
   if (typeof property.indent !== "undefined") {
     const { indent } = property;
     let kind;
@@ -275,6 +335,10 @@ export const setParagraphProperty = <T extends wasm.Paragraph | wasm.Style>(
     target = target.keep_lines(true) as T;
   }
 
+  if (property.snapToGrid != null) {
+    target = target.snap_to_grid(!!property.snapToGrid) as T;
+  }
+
   if (property.keepNext) {
     target = target.keep_next(true) as T;
   }
@@ -289,6 +353,106 @@ export const setParagraphProperty = <T extends wasm.Paragraph | wasm.Style>(
 
   if (property.outlineLvl != null) {
     target = target.outline_lvl(property.outlineLvl) as T;
+  }
+
+  if (property.tabs) {
+    for (const tab of property.tabs) {
+      let val: wasm.TabValueType | undefined;
+      let leader: wasm.TabLeaderType | undefined;
+      switch (tab.val) {
+        case "bar":
+          val = wasm.TabValueType.Bar;
+          break;
+        case "bar":
+          val = wasm.TabValueType.Bar;
+          break;
+        case "center":
+          val = wasm.TabValueType.Center;
+          break;
+        case "clear":
+          val = wasm.TabValueType.Clear;
+          break;
+        case "decimal":
+          val = wasm.TabValueType.Decimal;
+          break;
+        case "end":
+          val = wasm.TabValueType.End;
+          break;
+        case "right":
+          val = wasm.TabValueType.Right;
+          break;
+        case "num":
+          val = wasm.TabValueType.Num;
+          break;
+        case "start":
+          val = wasm.TabValueType.Start;
+          break;
+        case "left":
+          val = wasm.TabValueType.Left;
+          break;
+      }
+
+      switch (tab.leader) {
+        case "dot":
+          leader = wasm.TabLeaderType.Dot;
+          break;
+        case "heavy":
+          leader = wasm.TabLeaderType.Heavy;
+          break;
+        case "hyphen":
+          leader = wasm.TabLeaderType.Hyphen;
+          break;
+        case "middleDot":
+          leader = wasm.TabLeaderType.MiddleDot;
+          break;
+        case "none":
+          leader = wasm.TabLeaderType.None;
+          break;
+        case "underscore":
+          leader = wasm.TabLeaderType.None;
+          break;
+      }
+      target = target.add_tab(val, leader, tab.pos ?? undefined) as T;
+    }
+  }
+
+  if (property.frameProperty) {
+    if (property.frameProperty?.h != null) {
+      target = target.frame_height(property.frameProperty.h) as T;
+    }
+    if (property.frameProperty?.hRule != null) {
+      target = target.h_rule(property.frameProperty.hRule) as T;
+    }
+    if (property.frameProperty?.hAnchor != null) {
+      target = target.h_anchor(property.frameProperty.hAnchor) as T;
+    }
+    if (property.frameProperty?.hSpace != null) {
+      target = target.h_space(property.frameProperty.hSpace) as T;
+    }
+    if (property.frameProperty?.vAnchor != null) {
+      target = target.v_anchor(property.frameProperty.vAnchor) as T;
+    }
+    if (property.frameProperty?.vSpace != null) {
+      target = target.v_space(property.frameProperty.vSpace) as T;
+    }
+    if (property.frameProperty?.w != null) {
+      target = target.frame_width(property.frameProperty.w) as T;
+    }
+    if (property.frameProperty?.wrap != null) {
+      target = target.wrap(property.frameProperty.wrap) as T;
+    }
+    if (property.frameProperty?.x != null) {
+      target = target.frame_x(property.frameProperty.x) as T;
+    }
+    if (property.frameProperty?.xAlign != null) {
+      target = target.x_align(property.frameProperty.xAlign) as T;
+    }
+    if (property.frameProperty?.y != null) {
+      target = target.frame_y(property.frameProperty.y) as T;
+    }
+    if (property.frameProperty?.yAlign != null) {
+      target = target.y_align(property.frameProperty.yAlign) as T;
+    }
   }
 
   return target;

@@ -6,7 +6,7 @@ use wasm_bindgen::prelude::*;
 pub struct Header(docx_rs::Header);
 
 #[wasm_bindgen(js_name = createHeader)]
-pub fn create_footer() -> Header {
+pub fn create_header() -> Header {
     Header(docx_rs::Header::new())
 }
 

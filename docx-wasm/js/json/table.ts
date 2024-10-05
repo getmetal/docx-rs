@@ -4,8 +4,15 @@ import { HeightRule } from "../table-row";
 import { TextDirectionType } from "../table-cell";
 import { ShadingJSON } from "./shading";
 import { TableLayoutType } from "../table";
-import { DeleteJSONData, InsertJSONData } from "..";
+import { DeleteJSONData, InsertJSONData, TableCellBordersJSON } from "..";
 import { StructuredTagJSON } from "./structured-data-tag";
+
+import { TablePositionProperty as TablePositionPropertyJSON } from "./bindings/TablePositionProperty";
+
+export { TablePositionProperty as TablePositionPropertyJSON } from "./bindings/TablePositionProperty";
+export { TableCellBorder as TableCellBorderJSON } from "./bindings/TableCellBorder";
+
+export { TableCellBorders as TableCellBordersJSON } from "./bindings/TableCellBorders";
 
 export type TableCellChildJSON = ParagraphJSON | TableJSON | StructuredTagJSON;
 
@@ -20,12 +27,13 @@ export type TableCellPropertyJSON = {
     width: number;
     widthType: WidthType;
   } | null;
-  borders: any | null;
+  borders: TableCellBordersJSON | null;
   gridSpan: number | null;
   verticalMerge: "restart" | "continue" | null;
   verticalAlign: "top" | "center" | "bottom" | null;
   textDirection: TextDirectionType | null;
   shading: ShadingJSON | null;
+  margins?: CellMarginsJSON;
 };
 
 export type TableRowPropertyJSON = {
@@ -64,6 +72,13 @@ export type TableCellMarginsJSON = {
   right: TableCellMarginJSON;
 };
 
+export type CellMarginsJSON = {
+  top: TableCellMarginJSON;
+  left: TableCellMarginJSON;
+  bottom: TableCellMarginJSON;
+  right: TableCellMarginJSON;
+};
+
 export type TablePropertyJSON = {
   width: {
     width: number;
@@ -85,6 +100,7 @@ export type TablePropertyJSON = {
   } | null;
   style?: string | null;
   layout?: TableLayoutType | null;
+  position?: TablePositionPropertyJSON;
 };
 
 export type TableJSON = {

@@ -22,6 +22,8 @@ pub struct TableProperty {
     style: Option<TableStyle>,
     #[serde(skip_serializing_if = "Option::is_none")]
     layout: Option<TableLayout>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    position: Option<TablePositionProperty>,
 }
 
 impl Default for TableProperty {
@@ -34,6 +36,7 @@ impl Default for TableProperty {
             indent: None,
             style: None,
             layout: None,
+            position: None,
         }
     }
 }
@@ -139,6 +142,11 @@ impl TableProperty {
         self.layout = Some(TableLayout::new(t));
         self
     }
+
+    pub fn position(mut self, p: TablePositionProperty) -> Self {
+        self.position = Some(p);
+        self
+    }
 }
 
 impl BuildXML for TableProperty {
@@ -152,6 +160,7 @@ impl BuildXML for TableProperty {
             .add_optional_child(&self.indent)
             .add_optional_child(&self.style)
             .add_optional_child(&self.layout)
+            .add_optional_child(&self.position)
             .close()
             .build()
     }
@@ -171,7 +180,7 @@ mod tests {
         let b = c.build();
         assert_eq!(
             str::from_utf8(&b).unwrap(),
-            r#"<w:tblPr><w:tblW w:w="0" w:type="dxa" /><w:jc w:val="left" /><w:tblBorders><w:top w:val="single" w:sz="2" w:space="0" w:color="000000" /><w:left w:val="single" w:sz="2" w:space="0" w:color="000000" /><w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000" /><w:right w:val="single" w:sz="2" w:space="0" w:color="000000" /><w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000" /><w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000" /></w:tblBorders></w:tblPr>"#
+            r#"<w:tblPr><w:tblW w:w="0" w:type="auto" /><w:jc w:val="left" /><w:tblBorders><w:top w:val="single" w:sz="2" w:space="0" w:color="000000" /><w:left w:val="single" w:sz="2" w:space="0" w:color="000000" /><w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000" /><w:right w:val="single" w:sz="2" w:space="0" w:color="000000" /><w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000" /><w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000" /></w:tblBorders></w:tblPr>"#
         );
     }
 

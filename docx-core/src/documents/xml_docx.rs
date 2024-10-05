@@ -18,7 +18,9 @@ pub struct XMLDocx {
     pub numberings: Vec<u8>,
     pub media: Vec<(String, Vec<u8>)>,
     pub headers: Vec<Vec<u8>>,
+    pub header_rels: Vec<Vec<u8>>,
     pub footers: Vec<Vec<u8>>,
+    pub footer_rels: Vec<Vec<u8>>,
     pub comments_extended: Vec<u8>,
     pub taskpanes: Option<Vec<u8>>,
     pub taskpanes_rels: Vec<u8>,
@@ -26,6 +28,7 @@ pub struct XMLDocx {
     pub custom_items: Vec<Vec<u8>>,
     pub custom_item_rels: Vec<Vec<u8>>,
     pub custom_item_props: Vec<Vec<u8>>,
+    pub footnotes: Vec<u8>,
 }
 
 impl XMLDocx {

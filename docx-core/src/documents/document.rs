@@ -174,6 +174,11 @@ impl Document {
         self
     }
 
+    pub(crate) fn first_header_without_title_pg(mut self, h: Header, rid: &str) -> Self {
+        self.section_property = self.section_property.first_header_without_title_pg(h, rid);
+        self
+    }
+
     pub fn even_header(mut self, h: Header, rid: &str) -> Self {
         self.section_property = self.section_property.even_header(h, rid);
         self
@@ -186,6 +191,11 @@ impl Document {
 
     pub fn first_footer(mut self, h: Footer, rid: &str) -> Self {
         self.section_property = self.section_property.first_footer(h, rid);
+        self
+    }
+
+    pub(crate) fn first_footer_without_title_pg(mut self, h: Footer, rid: &str) -> Self {
+        self.section_property = self.section_property.first_footer_without_title_pg(h, rid);
         self
     }
 
@@ -216,6 +226,11 @@ impl Document {
 
     pub fn text_direction(mut self, direction: String) -> Self {
         self.section_property.text_direction = direction;
+        self
+    }
+
+    pub fn page_num_type(mut self, p: PageNumType) -> Self {
+        self.section_property = self.section_property.page_num_type(p);
         self
     }
 }
