@@ -13,6 +13,7 @@ pub struct Paragraph {
     pub children: Vec<ParagraphChild>,
     pub property: ParagraphProperty,
     pub has_numbering: bool,
+    pub page_number: Option<u32>,
 }
 
 impl Default for Paragraph {
@@ -137,7 +138,9 @@ impl Serialize for ParagraphChild {
 
 impl Paragraph {
     pub fn new() -> Paragraph {
-        Default::default()
+        let mut para = Default::default();
+        para.page_number = Some(estimate_page_number(&para, &Settings::default()));
+        para
     }
 
     pub fn id(mut self, id: impl Into<String>) -> Self {
@@ -494,6 +497,12 @@ impl BuildXML for Paragraph {
             .add_child(&self.property)
             .add_children(&self.children)
             .close()
+    pub fn update_page_number(&mut self, settings: &Settings) {
+        self.page_number = Some(estimate_page_number(self, settings));
+    }
+    pub fn page_number(&self) -> Option<u32> {
+        self.page_number
+    }
             .build()
     }
 }
@@ -615,3 +624,18 @@ mod tests {
         assert_eq!(b, "HelloWorld".to_owned());
     }
 }
+    #[test]
+    fn test_page_number() {
+        let mut p = Paragraph::new()
+            .add_run(Run::new().add_text("Hello World"));
+        p.update_page_number(&Settings::default());
+        assert_eq!(p.page_number(), Some(1));
+    }
+
+    #[test]
+    fn test_estimate_page_number() {
+        let p = Paragraph::new()
+            .add_run(Run::new().add_text("Hello World"));
+        let page_number = estimate_page_number(&p, &Settings::default());
+        assert_eq!(page_number, 1);
+    }
